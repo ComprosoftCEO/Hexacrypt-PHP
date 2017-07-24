@@ -1,5 +1,5 @@
 #
-#	Makefile template
+#	Hexacrypt-PHP Makefile
 #
 #	This is an example Makefile that can be used by anyone who is building
 #	his or her own PHP extensions using the PHP-CPP library. 

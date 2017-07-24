@@ -37,20 +37,6 @@ void Rand64::reseed(unsigned long seed) {
 }
 
 
-//Seed the random number generator using a string
-/*void Rand64::reseed(string str) {
-	unsigned long seed = 0;
-	size_t i;
-
-	for (i = 0; i < str.length(); i++) {
-		seed+=str[i];
-	}
-
-	reseed((unsigned long) seed);
-}*/
-
-
-
 //Seed using the seeder
 void Rand64::randomSeed() {
 	reseed(seeder.next());
