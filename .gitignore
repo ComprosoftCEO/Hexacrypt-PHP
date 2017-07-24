@@ -30,8 +30,11 @@
 *.exe
 *.out
 *.app
+<<<<<<< HEAD
 
 # Test files
 *.php
 
 Backup/
+=======
+>>>>>>> 68a81c5e2ab1b061842ece44a386ffce210592a4
