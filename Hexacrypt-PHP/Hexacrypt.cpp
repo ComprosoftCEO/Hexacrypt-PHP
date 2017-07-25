@@ -14,6 +14,8 @@ static const int CHAR_COUNT = allChars.length();
 
 
 //Filter out any illegal characters
+//===================================
+//  Returns the filtered string
 string filter(string input) {
 
 	string retStr = "";
@@ -32,36 +34,48 @@ string filter(string input) {
 
 //Perform a Pseudo XOR on string input and using
 //  a seeded Rand64 object
-string pseudoXOR(string input, Rand64 &rand) {
+void pseudoXOR(string &input, Rand64 &rand) {
 
-	string pxor, retStr = "";
+	string pxor;
 	size_t i, index, strlen = allChars.length();	
 	
 	for (i = 0; i < input.length(); i++) {
 		pxor = rand.shuffleString(allChars);
 		index = pxor.find_first_of(input[i]);
-		retStr+=pxor[(strlen - 1) - index];
+		input[i]=pxor[(strlen - 1) - index];
 	}
-
-	return retStr;
 }
 
 
 
+//Completely reverse all of the characters in the string
+//=======================================================
+//  Modifies the input string...
+void reverseStr(string &str)
+{
+    int n = str.length();
+ 
+    // Swap character starting from two
+    // corners
+    for (int i=0; i<n/2; i++)
+       swap(str[i], str[n-i-1]);
+}
+
+
 //Add random garbage onto the front of the string
-//
+//=======================================================
 //  Requires the seed for adding the count of how much garbage was added
-string addGarbage(string input, Rand64 &rand, unsigned long &seed) {
+void addGarbage(string &input, Rand64 &rand, unsigned long &seed) {
 
     int front, back, i;
     string count_string;    //Used to encode the garbage added
 
-    front = rand.next(GARBAGE)+1;
+    front = rand.next(GARBAGE+1);
     for (i = 0; i < front; i++) {
         input.insert(0,&allChars[rand.next(CHAR_COUNT)], 1);
     }
 
-    back = rand.next(GARBAGE)+1;
+    back = rand.next(GARBAGE);
     for (i = 0; i < back; i++) {
         input+=allChars[rand.next(CHAR_COUNT)];
     }    
@@ -70,16 +84,14 @@ string addGarbage(string input, Rand64 &rand, unsigned long &seed) {
     count_string = rand.shuffleString(allChars);
     input+=count_string[front];
     input+=count_string[back];
-
-    return input;
 }
 
 
 
 //Removes the garbage from the string
-//
+//====================================
 //   Throws error upon failure
-string removeGarbage(string input, Rand64 &rand) {
+void removeGarbage(string &input, Rand64 &rand) {
 
     int front, back;
     string count_string = rand.shuffleString(allChars);
@@ -97,14 +109,14 @@ string removeGarbage(string input, Rand64 &rand) {
     //We gucci. Remove the characters
     input = input.substr(front);
     input = input.substr(0,(input.length() - back) - 2);
-
-    return input;
 }
 
 
 
 
 //Encrypt with the Hexacrypt Algorithn
+//======================================
+//  Returns the encrypted string
 Php::Value Hexacrypt_Encrypt(Php::Parameters &params) {
 
 	string plaintext, key;
@@ -118,16 +130,17 @@ Php::Value Hexacrypt_Encrypt(Php::Parameters &params) {
     seed = Hash8<unsigned long>(key);
 
 	rand.reseed(seed);
-	plaintext = pseudoXOR(plaintext,rand);
+	pseudoXOR(plaintext,rand);
+	reverseStr(plaintext);
     rand.randomSeed();
-    plaintext = addGarbage(plaintext,rand, seed);
+    addGarbage(plaintext,rand, seed);
 
     //Also add a small checksum
     checksum = allChars[Hash8<unsigned char>(key+plaintext) % CHAR_COUNT];
     plaintext.insert(0,&checksum,1);
 
     rand.reseed(seed);
-    plaintext = pseudoXOR(plaintext,rand);
+    pseudoXOR(plaintext,rand);
 
 	return plaintext;
 }
@@ -136,6 +149,7 @@ Php::Value Hexacrypt_Encrypt(Php::Parameters &params) {
 
 
 //Decrypt with the Hexacrypt Algorithm
+//========================================
 //  Returns false upon failure
 Php::Value Hexacrypt_Decrypt(Php::Parameters &params) {
 
@@ -150,7 +164,7 @@ Php::Value Hexacrypt_Decrypt(Php::Parameters &params) {
     seed = Hash8<unsigned long>(key); 
 
 	rand.reseed(seed);
-    ciphertext = pseudoXOR(ciphertext, rand);
+    pseudoXOR(ciphertext, rand);
 
     //Validate checksum
     checksum = allChars[
@@ -167,14 +181,15 @@ Php::Value Hexacrypt_Decrypt(Php::Parameters &params) {
     //Test for error in garbage
     rand.reseed(seed);
     try {
-        ciphertext = removeGarbage(ciphertext, rand);
+        removeGarbage(ciphertext, rand);
     } catch (const char* msg) {
         //Php::warning << "Invalid Hexacrypt string. Unable to decrypt." << endl;
         return false;
     }
 
+	reverseStr(ciphertext);
     rand.reseed(seed);
-	ciphertext = pseudoXOR(ciphertext,rand);
+	pseudoXOR(ciphertext,rand);
     
 	return ciphertext;
 }
