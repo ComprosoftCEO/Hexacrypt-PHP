@@ -2,13 +2,6 @@
 
 using namespace std;
 
-//Allow us to access the individual hash bytes
-template <class type>
-union HASH_STRUCT_t {
-    type value;
-    char byte[sizeof(type)];
-};
-
 
 // 0-255 shuffled in any (random) order suffices
 static const unsigned char hashTable[256] = {
@@ -36,8 +29,7 @@ static const unsigned char hashTable[256] = {
 template <class type>
 type Hash8(string input) {
 
-	//Dynamically define the uniion
-	HASH_STRUCT_t<type> retVal;
+	type retVal = 0;	
 	unsigned char hashChar;
 	size_t i, j;
 
@@ -47,10 +39,11 @@ type Hash8(string input) {
         for (j = 0; j < input.length(); j++) {
             hashChar = hashTable[hashChar ^ input[j]];
         }
-        retVal.byte[i] = hashChar;
+		retVal <<= 8;
+        retVal |= hashChar;
     }
 
-    return retVal.value;	
+    return retVal;	
 }
 
 
