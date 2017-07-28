@@ -27,13 +27,13 @@ void Rand64::reseed(unsigned long seed) {
 	
 	//Use Linear congruential generator to fill array
 	for (int i = 0; i < ORDER; i++) {
+		seed = (seed*MULTIPLER + INCREMENT);		
 		arr[i] = seed;
-		seed = (seed*MULTIPLER + INCREMENT);
 
         //Switch bits
         seed = (seed << 32) | (seed >> 32);
 	}
-	arr[ORDER] = 0;
+	pos = 0;
 }
 
 
@@ -46,9 +46,9 @@ void Rand64::randomSeed() {
 
 //Get the next random number
 unsigned long Rand64::next() {
-	int index = arr[ORDER] = (arr[ORDER] + 1) & ARR_MASK;
-	arr[index] += (arr[(index + 5) & ARR_MASK] + arr[(index + 17) & ARR_MASK]);
-	return arr[index];
+	pos = (pos + 1) & ARR_MASK;
+	arr[pos] += (arr[(pos + 5) & ARR_MASK] + arr[(pos + 19) & ARR_MASK]);
+	return arr[pos];
 }
 
 

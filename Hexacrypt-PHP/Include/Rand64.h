@@ -13,7 +13,8 @@
 class Rand64 {
 
 	private:
-		unsigned long arr[ORDER + 1];
+		unsigned long arr[ORDER];
+		unsigned char pos;
 		static Rand64 seeder;
 
 	public:
@@ -21,7 +22,6 @@ class Rand64 {
 		Rand64(unsigned long);
 
 		void reseed(unsigned long);
-		//void reseed(std::string);
 		void randomSeed();	
 
 		unsigned long next();
