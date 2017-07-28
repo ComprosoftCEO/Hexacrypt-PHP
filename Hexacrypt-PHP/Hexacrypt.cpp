@@ -65,10 +65,13 @@ void reverseStr(string &str)
 //Add random garbage onto the front of the string
 //=======================================================
 //  Requires the seed for adding the count of how much garbage was added
-void addGarbage(string &input, Rand64 &rand, unsigned long &seed) {
+void addGarbage(string &input, Rand64 &rand) {
 
+    //Used to encode the garbage added
+    string count_string = rand.shuffleString(allChars);
     int front, back, i;
-    string count_string;    //Used to encode the garbage added
+
+	rand.randomSeed();
 
     front = rand.next(GARBAGE+1);
     for (i = 0; i < front; i++) {
@@ -80,8 +83,6 @@ void addGarbage(string &input, Rand64 &rand, unsigned long &seed) {
         input+=allChars[rand.next(CHAR_COUNT)];
     }    
 
-    rand.reseed(seed);
-    count_string = rand.shuffleString(allChars);
     input+=count_string[front];
     input+=count_string[back];
 }
@@ -132,8 +133,8 @@ Php::Value Hexacrypt_Encrypt(Php::Parameters &params) {
 	rand.reseed(seed);
 	pseudoXOR(plaintext,rand);
 	reverseStr(plaintext);
-    rand.randomSeed();
-    addGarbage(plaintext,rand, seed);
+    rand.reseed(seed);
+    addGarbage(plaintext,rand);
 
     //Also add a small checksum
     checksum = allChars[Hash8<unsigned char>(key+plaintext) % CHAR_COUNT];
@@ -173,7 +174,8 @@ Php::Value Hexacrypt_Decrypt(Php::Parameters &params) {
         Hash8<unsigned char>(key+ciphertext.substr(1,ciphertext.length() - 1)) % CHAR_COUNT
     ];   
     if (checksum != ciphertext[0]) {
-        return false;
+        //Php::warning << "Invalid Checksum. Unable to decrypt." << endl;
+        return Php::Type::Null;
     }
     ciphertext = ciphertext.substr(1,ciphertext.length() - 1);
 
@@ -183,11 +185,12 @@ Php::Value Hexacrypt_Decrypt(Php::Parameters &params) {
     try {
         removeGarbage(ciphertext, rand);
     } catch (const char* msg) {
-        //Php::warning << "Invalid Hexacrypt string. Unable to decrypt." << endl;
-        return false;
+        //Php::warning << "Invalid Garbage. Unable to decrypt." << endl;
+        return Php::Type::Null;
     }
 
 	reverseStr(ciphertext);
+	
     rand.reseed(seed);
 	pseudoXOR(ciphertext,rand);
     
