@@ -12,8 +12,5 @@ PHP extension for Hexacrypt programmed using PHP-CPP
 
 <br>
 
-## Algorithm Differences
-*This algorithm a few differences from the other [Hexacrypt Repository](https://github.com/ComprosoftCEO/Hexacrypt).*
-1. Uses a custom pseudo random number generator called Rand64
-2. A checksum is appended to the front of the string to make verification easier
-3. String is reversed before trash is added
+## Compatibility
+*This algorithm now works exactly the same as the main [Hexacrypt Repository](https://github.com/ComprosoftCEO/Hexacrypt).*
